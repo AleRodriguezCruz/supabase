@@ -8,6 +8,7 @@ Proyecto Vue 3 con autenticación real usando **Supabase Auth**. Rutas protegida
 - Vite 7 / Vue Router 5 / Pinia
 - Supabase JS v2
 
+
 ## Configuración rápida
 
 ### 1. Instalar dependencias
