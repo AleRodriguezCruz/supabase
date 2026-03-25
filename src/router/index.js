@@ -7,6 +7,9 @@ const LoginView     = () => import('@/views/LoginView.vue')
 const DashboardView = () => import('@/views/DashboardView.vue')
 const NotFoundView  = () => import('@/views/NotFoundView.vue')
 const RegisterView  = () => import('@/views/RegisterView.vue')
+const ForgotPasswordView = () => import('@/views/ForgotPasswordView.vue')
+const ResetPasswordView  = () => import('@/views/ResetPasswordView.vue')
+
 
 const routes = [
   {
@@ -38,6 +41,18 @@ const routes = [
     name: 'not-found',
     component: NotFoundView,
     meta: { title: 'Página no encontrada' },
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: ForgotPasswordView,
+    meta: { title: 'Recuperar contraseña', requiresAuth: false, guestOnly: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: ResetPasswordView,
+    meta: { title: 'Nueva contraseña', requiresAuth: false },
   },
 ]
 

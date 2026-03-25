@@ -83,6 +83,11 @@
           <RouterLink to="/register">Regístrate aquí</RouterLink>
         </p>
 
+        <p class="register-link">
+          ¿Olvidaste tu contraseña?
+          <RouterLink to="/forgot-password">Recupérala aquí</RouterLink>
+        </p>
+
       </form>
     </div>
   </div>
