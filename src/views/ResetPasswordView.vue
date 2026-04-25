@@ -13,24 +13,24 @@
         <p class="card-subtitle">Elige una contraseña segura</p>
       </div>
 
-      <!-- Éxito -->
+      <!-- Mensaje de éxito -->
       <Transition name="alert">
         <div v-if="successMsg" class="alert-success" role="alert">
           <span>✅</span> {{ successMsg }}
         </div>
       </Transition>
 
-      <!-- Error -->
+      <!-- Mensaje de error -->
       <Transition name="alert">
         <div v-if="errorMsg" class="alert-error" role="alert">
           <span>⚠</span> {{ errorMsg }}
         </div>
       </Transition>
 
-      <!-- Formulario -->
+      <!-- Formulario para nueva contraseña -->
       <form class="login-form" @submit.prevent="handleReset" novalidate>
 
-        <!-- Nueva contraseña -->
+        <!-- Campo: nueva contraseña -->
         <div class="field" :class="{ 'field--error': errors.password }">
           <label for="password" class="field-label">Nueva contraseña</label>
           <div class="field-input-wrap">
@@ -50,7 +50,7 @@
           <span v-if="errors.password" class="field-error">{{ errors.password }}</span>
         </div>
 
-        <!-- Confirmar contraseña -->
+        <!-- Campo: confirmar contraseña -->
         <div class="field" :class="{ 'field--error': errors.confirm }">
           <label for="confirm" class="field-label">Confirmar contraseña</label>
           <div class="field-input-wrap">
@@ -70,6 +70,7 @@
           <span v-if="errors.confirm" class="field-error">{{ errors.confirm }}</span>
         </div>
 
+        <!-- Botón para guardar -->
         <button
           type="submit"
           class="btn-submit"
@@ -100,7 +101,8 @@ const showConfirm  = ref(false)
 const form   = reactive({ password: '', confirm: '' })
 const errors = reactive({ password: '', confirm: '' })
 
-// Supabase envía el token en el hash de la URL — lo procesamos al montar
+// Al cargar la página verificamos que el link del correo sea válido
+// Si no hay sesión activa, el link ya expiró y avisamos al usuario
 onMounted(async () => {
   const { data, error } = await supabase.auth.getSession()
   if (error || !data.session) {
@@ -108,16 +110,18 @@ onMounted(async () => {
   }
 })
 
+// Validamos que la contraseña tenga al menos 6 caracteres
 function validatePassword() {
-  if (!form.password)               errors.password = 'La contraseña es obligatoria.'
+  if (!form.password)                errors.password = 'La contraseña es obligatoria.'
   else if (form.password.length < 6) errors.password = 'Mínimo 6 caracteres.'
-  else                              errors.password = ''
+  else                               errors.password = ''
 }
 
+// Verificamos que ambas contraseñas coincidan antes de guardar
 function validateConfirm() {
-  if (!form.confirm)                      errors.confirm = 'Confirma tu contraseña.'
+  if (!form.confirm)                       errors.confirm = 'Confirma tu contraseña.'
   else if (form.confirm !== form.password) errors.confirm = 'Las contraseñas no coinciden.'
-  else                                    errors.confirm = ''
+  else                                     errors.confirm = ''
 }
 
 function isFormValid() {
@@ -125,8 +129,11 @@ function isFormValid() {
   return !errors.password && !errors.confirm
 }
 
+// Guardamos la nueva contraseña en Supabase
+// Después cerramos la sesión para que el usuario inicie con sus nuevas credenciales
+// Usamos router.replace en lugar de push para que no pueda regresar con el botón atrás
 async function handleReset() {
-  errorMsg.value  = ''
+  errorMsg.value   = ''
   successMsg.value = ''
   if (!isFormValid()) return
 
@@ -136,7 +143,12 @@ async function handleReset() {
     if (error) throw error
 
     successMsg.value = '¡Contraseña actualizada! Redirigiendo al login...'
-    setTimeout(() => router.push('/login'), 2500)
+
+    // Cerramos sesión para que inicie con la nueva contraseña
+    await supabase.auth.signOut()
+
+    // replace en lugar de push bloquea el botón atrás del navegador
+    setTimeout(() => router.replace('/login'), 2500)
   } catch (err) {
     errorMsg.value = err.message || 'Error al actualizar la contraseña.'
   } finally {
