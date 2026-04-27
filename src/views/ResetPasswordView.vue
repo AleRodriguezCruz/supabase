@@ -30,25 +30,29 @@ const validateConfirm = () => {
 }
 
 const handleReset = async () => {
-  // Limpiar estados
   errorMsg.value = ''
   if (!validatePassword() || !validateConfirm()) return
 
   isLoading.value = true
 
   try {
-    // Esto actualiza al usuario que tiene la sesión activa del correo
+    // 1. Actualizamos contraseña
     const { error } = await supabase.auth.updateUser({
       password: form.password
     })
 
     if (error) throw error
 
-    successMsg.value = 'Contraseña actualizada con éxito.'
+    successMsg.value = 'Contraseña actualizada con éxito. Redirigiendo al login...'
     
-    //  Forzamos el envío al login después de 2 segundos
+    // 2. CERRAMOS SESIÓN TÉCNICA
+    // Esto es lo que activa la protección del Router Guard si intentan volver atrás
+    await supabase.auth.signOut()
+
+    // 3. Redirección definitiva
     setTimeout(() => {
-      router.push('/login')
+      // Usamos REPLACE para borrar la página de reset del historial del navegador
+      router.replace('/login')
     }, 2500)
 
   } catch (err) {
