@@ -30,30 +30,30 @@ const validateConfirm = () => {
 }
 
 const handleReset = async () => {
+  // Limpiar estados
   errorMsg.value = ''
   if (!validatePassword() || !validateConfirm()) return
 
   isLoading.value = true
 
   try {
+    // Esto actualiza al usuario que tiene la sesión activa del correo
     const { error } = await supabase.auth.updateUser({
       password: form.password
     })
 
     if (error) throw error
 
-    successMsg.value = '¡Contraseña actualizada! Redirigiendo al inicio de sesión...'
+    successMsg.value = 'Contraseña actualizada con éxito.'
     
-    //  Cerramos la sesión temporal para obligar un login limpio
-    await supabase.auth.signOut()
-
+    //  Forzamos el envío al login después de 2 segundos
     setTimeout(() => {
-      // Usamos la ruta del login
       router.push('/login')
-    }, 2000)
+    }, 2500)
 
   } catch (err) {
-    errorMsg.value = err.message
+    console.error('Error de Supabase:', err)
+    errorMsg.value = err.message || 'Error al actualizar la contraseña'
   } finally {
     isLoading.value = false
   }
@@ -110,6 +110,7 @@ const handleReset = async () => {
 </template>
 
 <style scoped>
+/* ESTILOS PARA QUE NO SE VEA FEO */
 .auth-page {
   display: flex;
   justify-content: center;
