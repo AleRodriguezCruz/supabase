@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 
-
 const HomeView = () => import('@/views/HomeView.vue')
 const LoginView = () => import('@/views/LoginView.vue')
 const DashboardView = () => import('@/views/DashboardView.vue')
@@ -45,7 +44,6 @@ const routes = [
     path: '/reset-password',
     name: 'reset-password',
     component: ResetPasswordView,
-    // requiresAuth false porque entramos con la sesión temporal del correo
     meta: { title: 'Nueva contraseña', requiresAuth: false },
   },
   {
@@ -65,26 +63,30 @@ const router = createRouter({
   },
 })
 
-// NAVIGATION GUARD
+// NAVIGATION GUARD MEJORADO
 router.beforeEach(async (to, from, next) => {
-  // Configurar título de la página
+  // 1. Título de la página
   document.title = `${to.meta.title ?? 'App'} | VueAuth`
 
-  // Obtener sesión actual
+  // 2. Obtener sesión actual
   const { data } = await supabase.auth.getSession()
   const isAuthenticated = !!data.session
 
-  // 1. Si la ruta requiere auth y no está logueado -> Al Login
+  // 3. BLOQUEO 
+  // Si intenta entrar a reset-password pero ya no hay sesión activa (porque terminó el proceso)
+  if (to.name === 'reset-password' && !isAuthenticated) {
+    return next({ name: 'login' })
+  }
+
+  // 4. Lógica de rutas protegidas
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } 
-  // 2. Si la ruta es solo para invitados (Login/Register) y YA está logueado
+  // 5. Lógica de rutas solo para invitados (Login/Register)
   else if (to.meta.guestOnly && isAuthenticated) {
-    //Si acaba de cambiar contraseña, el signOut() lo hará fallar aquí 
-    // y lo dejará entrar al login. Si no, al Dashboard.
     next({ name: 'dashboard' })
   } 
-  // 3. En cualquier otro caso, permitir el paso
+  // 6. Permitir el paso en cualquier otro caso
   else {
     next()
   }
