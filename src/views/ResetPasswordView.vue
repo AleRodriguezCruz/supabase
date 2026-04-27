@@ -110,7 +110,6 @@ const handleReset = async () => {
 </template>
 
 <style scoped>
-/* ESTILOS PARA QUE NO SE VEA FEO */
 .auth-page {
   display: flex;
   justify-content: center;
