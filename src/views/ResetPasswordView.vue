@@ -4,28 +4,23 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-// Estados de la interfaz
 const isLoading = ref(false)
 const showPassword = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 
-// Datos del formulario
 const form = reactive({
   password: '',
   confirm: ''
 })
 
-// Errores de validación
 const errors = reactive({
   password: '',
   confirm: ''
 })
 
-// Validaciones básicas
 const validatePassword = () => {
-  errors.password = form.password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : ''
+  errors.password = form.password.length < 6 ? 'Mínimo 6 caracteres' : ''
   return !errors.password
 }
 
@@ -34,36 +29,31 @@ const validateConfirm = () => {
   return !errors.confirm
 }
 
-// Función principal para actualizar la contraseña
 const handleReset = async () => {
-  // Limpiar mensajes previos
+  // Limpiar estados
   errorMsg.value = ''
-  
-  // Validar campos
-  const isPassValid = validatePassword()
-  const isConfirmValid = validateConfirm()
-  if (!isPassValid || !isConfirmValid) return
+  if (!validatePassword() || !validateConfirm()) return
 
   isLoading.value = true
 
   try {
-    // Supabase detecta automáticamente el token de la URL si el usuario 
-    // llega desde el correo de recuperación.
+    // IMPORTANTE: Esto actualiza al usuario que tiene la sesión activa del correo
     const { error } = await supabase.auth.updateUser({
       password: form.password
     })
 
     if (error) throw error
 
-    successMsg.value = '¡Contraseña actualizada con éxito! Redirigiendo...'
+    successMsg.value = 'Contraseña actualizada con éxito.'
     
-    // Redirigir después de 3 segundos para que el usuario lea el mensaje
+    // REDIRECCIÓN MANUAL: Forzamos el envío al login después de 2 segundos
     setTimeout(() => {
-      router.push({ name: 'login' })
-    }, 3000)
+      router.push('/login')
+    }, 2500)
 
   } catch (err) {
-    errorMsg.value = err.message || 'No se pudo actualizar la contraseña.'
+    console.error('Error de Supabase:', err)
+    errorMsg.value = err.message || 'Error al actualizar la contraseña'
   } finally {
     isLoading.value = false
   }
@@ -73,65 +63,148 @@ const handleReset = async () => {
 <template>
   <div class="auth-page">
     <div class="auth-card">
-
       <div class="auth-header">
-        <div class="auth-logo">
-          <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-            <rect width="28" height="28" rx="8" fill="#635bff"/>
-            <path d="M14 7C10.134 7 7 10.134 7 14s3.134 7 7 7 7-3.134 7-7-3.134-7-7-7zm0 11.5A4.5 4.5 0 119.5 14 4.505 4.505 0 0114 18.5z" fill="white"/>
-          </svg>
-        </div>
         <h1 class="auth-title">Nueva contraseña</h1>
-        <p class="auth-subtitle">Elige una contraseña segura</p>
+        <p class="auth-subtitle">Elige una clave que no hayas usado antes</p>
       </div>
 
-      <div v-if="successMsg" class="alert alert--success">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M20 6L9 17l-5-5"/>
-        </svg>
-        {{ successMsg }}
-      </div>
+      <div v-if="successMsg" class="alert alert--success">{{ successMsg }}</div>
+      <div v-if="errorMsg" class="alert alert--error">{{ errorMsg }}</div>
 
-      <div v-if="errorMsg" class="alert alert--error">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0V5zm.75 7a1 1 0 110-2 1 1 0 010 2z"/>
-        </svg>
-        {{ errorMsg }}
-      </div>
-
-      <form v-if="!successMsg" @submit.prevent="handleReset" novalidate>
-
-        <div class="field" :class="{ 'field--error': errors.password }">
-          <label for="password" class="field-label">Nueva contraseña</label>
-          <div class="field-input-wrap">
-            <input id="password" v-model="form.password" :type="showPassword ? 'text' : 'password'"
-              class="field-input" placeholder="Mínimo 6 caracteres" @blur="validatePassword"/>
-            <button type="button" class="field-eye" @click="showPassword = !showPassword">
-              <svg v-if="!showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-              </svg>
-              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
+      <form v-if="!successMsg" @submit.prevent="handleReset">
+        <div class="field">
+          <label class="field-label">Contraseña nueva</label>
+          <div class="input-container">
+            <input 
+              v-model="form.password" 
+              :type="showPassword ? 'text' : 'password'" 
+              class="field-input"
+              placeholder="Mínimo 6 caracteres"
+              @blur="validatePassword"
+            />
+            <button type="button" class="eye-btn" @click="showPassword = !showPassword">
+              {{ showPassword ? '👁️' : '🕶️' }}
             </button>
           </div>
           <span v-if="errors.password" class="field-msg">{{ errors.password }}</span>
         </div>
 
-        <div class="field" :class="{ 'field--error': errors.confirm }">
-          <label for="confirm" class="field-label">Confirmar contraseña</label>
-          <input id="confirm" v-model="form.confirm" type="password" class="field-input"
-            placeholder="Repite tu contraseña" @blur="validateConfirm"/>
+        <div class="field">
+          <label class="field-label">Confirmar contraseña</label>
+          <input 
+            v-model="form.confirm" 
+            type="password" 
+            class="field-input"
+            placeholder="Repite tu contraseña"
+            @blur="validateConfirm"
+          />
           <span v-if="errors.confirm" class="field-msg">{{ errors.confirm }}</span>
         </div>
 
         <button type="submit" class="btn-primary" :disabled="isLoading">
-          <span v-if="!isLoading">Guardar contraseña</span>
-          <span v-else class="spinner"></span>
+          {{ isLoading ? 'Guardando...' : 'Actualizar Contraseña' }}
         </button>
-
       </form>
-
     </div>
   </div>
 </template>
+
+<style scoped>
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 100px);
+  padding: 20px;
+  background-color: #f9fafb;
+}
+
+.auth-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.auth-subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.field {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background-color: #635bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #5348e6;
+}
+
+.btn-primary:disabled {
+  background-color: #a5a2f5;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.alert--error { background: #fee2e2; color: #b91c1c; }
+.alert--success { background: #dcfce7; color: #15803d; }
+.field-msg { color: #b91c1c; font-size: 12px; margin-top: 4px; }
+</style>
