@@ -1,3 +1,75 @@
+<script setup>
+import { ref, reactive } from 'vue'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// Estados de la interfaz
+const isLoading = ref(false)
+const showPassword = ref(false)
+const errorMsg = ref('')
+const successMsg = ref('')
+
+// Datos del formulario
+const form = reactive({
+  password: '',
+  confirm: ''
+})
+
+// Errores de validación
+const errors = reactive({
+  password: '',
+  confirm: ''
+})
+
+// Validaciones básicas
+const validatePassword = () => {
+  errors.password = form.password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : ''
+  return !errors.password
+}
+
+const validateConfirm = () => {
+  errors.confirm = form.password !== form.confirm ? 'Las contraseñas no coinciden' : ''
+  return !errors.confirm
+}
+
+// Función principal para actualizar la contraseña
+const handleReset = async () => {
+  // Limpiar mensajes previos
+  errorMsg.value = ''
+  
+  // Validar campos
+  const isPassValid = validatePassword()
+  const isConfirmValid = validateConfirm()
+  if (!isPassValid || !isConfirmValid) return
+
+  isLoading.value = true
+
+  try {
+    // Supabase detecta automáticamente el token de la URL si el usuario 
+    // llega desde el correo de recuperación.
+    const { error } = await supabase.auth.updateUser({
+      password: form.password
+    })
+
+    if (error) throw error
+
+    successMsg.value = '¡Contraseña actualizada con éxito! Redirigiendo...'
+    
+    // Redirigir después de 3 segundos para que el usuario lea el mensaje
+    setTimeout(() => {
+      router.push({ name: 'login' })
+    }, 3000)
+
+  } catch (err) {
+    errorMsg.value = err.message || 'No se pudo actualizar la contraseña.'
+  } finally {
+    isLoading.value = false
+  }
+}
+</script>
+
 <template>
   <div class="auth-page">
     <div class="auth-card">
