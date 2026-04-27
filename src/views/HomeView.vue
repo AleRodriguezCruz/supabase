@@ -1,118 +1,38 @@
-<!-- src/views/HomeView.vue -->
 <template>
-  <div class="home">
+  <div class="home-page">
+    <div class="home-inner">
 
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-bg" aria-hidden="true">
-        <div class="orb orb--1"></div>
-        <div class="orb orb--2"></div>
-        <div class="hex-grid"></div>
-      </div>
-
-      <div class="hero-content">
-        <div class="hero-chip">
-          <span class="chip-dot"></span>
-          Vue 3 + Composition API
-        </div>
-
-        <h1 class="hero-title">
-          Aprende <em>autenticación</em><br/>
-          con Vue Router
-        </h1>
-
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-badge">Vue 3 + Supabase</div>
+        <h1 class="hero-title">Autenticación segura<br/>para tu aplicación</h1>
         <p class="hero-desc">
-          Proyecto de práctica para dominar el flujo completo de login,
-          protección de rutas y manejo de sesión con la Composition API.
+          Sistema de autenticación completo con login, registro, rutas protegidas
+          y recuperación de contraseña. Conectado a Supabase en tiempo real.
         </p>
-
         <div class="hero-actions">
-          <RouterLink v-if="!isAuthenticated" to="/login" class="btn btn--primary">
-            Iniciar sesión →
+          <RouterLink v-if="!isAuthenticated" to="/register" class="btn-primary">
+            Crear cuenta gratis
           </RouterLink>
-          <RouterLink v-else to="/dashboard" class="btn btn--primary">
+          <RouterLink v-else to="/dashboard" class="btn-primary">
             Ir al Dashboard →
           </RouterLink>
-
-            href="https://router.vuejs.org"
-            target="_blank"
-            rel="noopener"
-            class="btn btn--ghost"
-          >
-            Ver documentación ↗
-
+          <RouterLink v-if="!isAuthenticated" to="/login" class="btn-secondary">
+            Iniciar sesión
+          </RouterLink>
         </div>
       </div>
 
-      <div class="hero-visual" aria-hidden="true">
-        <div class="code-card">
-          <div class="code-card__bar">
-            <span></span><span></span><span></span>
-          </div>
-          <pre class="code-card__body"><code><span class="t-comment">// Navigation Guard</span>
-<span class="t-keyword">router</span>.<span class="t-fn">beforeEach</span>(<span class="t-param">(to, from)</span> => {
-  <span class="t-keyword">const</span> { isAuthenticated }
-    = <span class="t-fn">useAuth</span>()
-
-  <span class="t-keyword">if</span> (to.meta.<span class="t-prop">requiresAuth</span>
-    && !isAuthenticated.<span class="t-prop">value</span>) {
-    <span class="t-keyword">return</span> { <span class="t-prop">name</span>: <span class="t-string">'login'</span> }
-  }
-})</code></pre>
+      <!-- Features -->
+      <div class="features-grid">
+        <div v-for="f in features" :key="f.title" class="feature-card">
+          <div class="feature-icon">{{ f.icon }}</div>
+          <h3 class="feature-title">{{ f.title }}</h3>
+          <p class="feature-desc">{{ f.desc }}</p>
         </div>
       </div>
-    </section>
 
-    <!-- FEATURES -->
-    <section class="features">
-      <div
-        v-for="(feat, i) in features"
-        :key="feat.title"
-        class="feat-card"
-        :style="{ animationDelay: `${i * 0.1}s` }"
-      >
-        <div class="feat-icon">{{ feat.icon }}</div>
-        <h3 class="feat-title">{{ feat.title }}</h3>
-        <p class="feat-desc">{{ feat.desc }}</p>
-        <div class="feat-tag">{{ feat.tag }}</div>
-      </div>
-    </section>
-
-    <!-- FLUJO -->
-    <section class="flow-section">
-      <h2 class="section-title">Flujo de autenticación</h2>
-      <p class="section-sub">Así viaja el usuario por la aplicación</p>
-
-      <div class="flow">
-        <div
-          v-for="(step, i) in flowSteps"
-          :key="step.label"
-          class="flow-item"
-        >
-          <div class="flow-node" :class="`node--${step.color}`">
-            <span>{{ step.icon }}</span>
-          </div>
-          <span class="flow-label">{{ step.label }}</span>
-          <div v-if="i < flowSteps.length - 1" class="flow-arrow">→</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA FINAL -->
-    <section class="cta-section">
-      <h2 class="cta-title">¿Listo para practicar?</h2>
-      <p class="cta-sub">
-        Inicia sesión con las credenciales de prueba y explora
-        la protección de rutas en acción.
-      </p>
-      <RouterLink v-if="!isAuthenticated" to="/login" class="btn btn--primary btn--lg">
-        Comenzar ahora →
-      </RouterLink>
-      <RouterLink v-else to="/dashboard" class="btn btn--primary btn--lg">
-        Ver mi Dashboard →
-      </RouterLink>
-    </section>
-
+    </div>
   </div>
 </template>
 
@@ -123,404 +43,82 @@ import { useAuth } from '@/composables/useAuth'
 const { isAuthenticated } = useAuth()
 
 const features = [
-  {
-    icon: '🔐',
-    title: 'Login reactivo',
-    desc: 'Formulario con validación en tiempo real usando reactive() y computed().',
-    tag: 'LoginView.vue',
-  },
-  {
-    icon: '🛡️',
-    title: 'Rutas protegidas',
-    desc: 'Navigation guards con beforeEach bloquean el acceso sin autenticación.',
-    tag: 'router/index.js',
-  },
-  {
-    icon: '⚡',
-    title: 'Estado global',
-    desc: 'useAuth() comparte el estado de sesión entre todos los componentes.',
-    tag: 'useAuth.js',
-  },
-  {
-    icon: '💾',
-    title: 'Persistencia',
-    desc: 'El token se guarda en localStorage para mantener la sesión activa.',
-    tag: 'composable',
-  },
-]
-
-const flowSteps = [
-  { icon: '🏠', label: 'Home',        color: 'gold'  },
-  { icon: '🔑', label: 'Login',       color: 'blue'  },
-  { icon: '✅', label: 'Autenticado', color: 'green' },
-  { icon: '📊', label: 'Dashboard',   color: 'gold'  },
+  { icon: '🔐', title: 'Login seguro',         desc: 'Autenticación con email y contraseña usando Supabase Auth.' },
+  { icon: '📝', title: 'Registro de usuarios', desc: 'Crea tu cuenta con confirmación de correo electrónico.' },
+  { icon: '🛡️', title: 'Rutas protegidas',     desc: 'El dashboard solo es accesible para usuarios autenticados.' },
+  { icon: '🔑', title: 'Recuperar contraseña', desc: 'Restablece tu contraseña con un enlace enviado a tu correo.' },
+  { icon: '☁️', title: 'Base de datos',         desc: 'Datos almacenados en Supabase con PostgreSQL en la nube.' },
+  { icon: '🚀', title: 'Desplegado en Vercel',  desc: 'Disponible en producción con deploy automático desde GitHub.' },
 ]
 </script>
 
 <style scoped>
-.home {
-  display: flex;
-  flex-direction: column;
-  gap: 5rem;
-  padding-bottom: 3rem;
-}
+.home-page { background: var(--gray-50); min-height: calc(100vh - 60px); padding: 4rem 1rem; }
 
-/* ── HERO ── */
-.hero {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-  min-height: 480px;
-  padding: 3rem 0;
-  overflow: hidden;
-}
+.home-inner { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 4rem; }
 
-@media (max-width: 768px) {
-  .hero { grid-template-columns: 1fr; }
-  .hero-visual { display: none; }
-}
-
-/* Fondo decorativo */
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.12;
-}
-
-.orb--1 {
-  width: 400px; height: 400px;
-  background: #c8a96e;
-  top: -100px; left: -100px;
-  animation: drift 8s ease-in-out infinite alternate;
-}
-
-.orb--2 {
-  width: 300px; height: 300px;
-  background: #6eb4e8;
-  bottom: -80px; right: 100px;
-  animation: drift 10s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes drift {
-  from { transform: translate(0, 0); }
-  to   { transform: translate(30px, 20px); }
-}
-
-.hex-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(200, 169, 110, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200, 169, 110, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* Contenido hero */
-.hero-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.hero-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(200, 169, 110, 0.08);
-  border: 1px solid rgba(200, 169, 110, 0.2);
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  color: #c8a96e;
-  width: fit-content;
-  letter-spacing: 0.03em;
-}
-
-.chip-dot {
-  width: 6px; height: 6px;
-  background: #c8a96e;
-  border-radius: 50%;
-  animation: blink 2s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-.hero-title {
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: #e8e4dc;
-  line-height: 1.15;
-  margin: 0;
-}
-
-.hero-title em {
-  font-style: normal;
-  background: linear-gradient(135deg, #c8a96e, #e8d5a3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.hero-desc {
-  color: #6b6560;
-  font-size: 1rem;
-  line-height: 1.65;
-  margin: 0;
-  max-width: 440px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-/* Botones */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.65rem 1.4rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.btn--primary {
-  background: linear-gradient(135deg, #c8a96e, #a0834e);
-  color: #0d0d0f;
-}
-
-.btn--primary:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(200, 169, 110, 0.25);
-}
-
-.btn--ghost {
-  background: rgba(255,255,255,0.05);
-  color: #9a938c;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.btn--ghost:hover {
-  background: rgba(255,255,255,0.09);
-  color: #e8e4dc;
-}
-
-.btn--lg { padding: 0.85rem 2rem; font-size: 1rem; }
-
-/* Tarjeta de código */
-.hero-visual {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.code-card {
-  background: #111113;
-  border: 1px solid rgba(200, 169, 110, 0.15);
-  border-radius: 14px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 380px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.03),
-    0 24px 48px rgba(0,0,0,0.4);
-  animation: floatCard 6s ease-in-out infinite;
-}
-
-@keyframes floatCard {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
-.code-card__bar {
-  display: flex;
-  gap: 6px;
-  padding: 0.7rem 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255,255,255,0.02);
-}
-
-.code-card__bar span {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-}
-
-.code-card__body {
-  padding: 1.25rem 1.4rem;
-  margin: 0;
-  font-family: 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 0.78rem;
-  line-height: 1.75;
-  overflow-x: auto;
-}
-
-/* Syntax highlight manual */
-.t-comment { color: #4a4a5a; }
-.t-keyword  { color: #6eb4e8; }
-.t-fn       { color: #c8a96e; }
-.t-param    { color: #b08ce8; }
-.t-prop     { color: #e8c46e; }
-.t-string   { color: #6fcf97; }
-
-/* ── FEATURES ── */
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.feat-card {
-  padding: 1.5rem;
-  background: rgba(22, 22, 26, 0.8);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  animation: slideUp 0.4s ease both;
-  transition: border-color 0.2s, transform 0.2s;
-}
-
-.feat-card:hover {
-  border-color: rgba(200, 169, 110, 0.2);
-  transform: translateY(-3px);
-}
+/* Hero */
+.hero { text-align: center; animation: slideUp 0.3s ease both; }
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.feat-icon  { font-size: 1.75rem; }
-.feat-title { font-size: 1rem; font-weight: 700; color: #e8e4dc; margin: 0; }
-.feat-desc  { font-size: 0.85rem; color: #5a5550; line-height: 1.55; margin: 0; flex: 1; }
-
-.feat-tag {
-  font-size: 0.72rem;
-  font-family: monospace;
-  color: #c8a96e;
-  background: rgba(200, 169, 110, 0.08);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  width: fit-content;
+.hero-badge {
+  display: inline-block; padding: 0.35rem 0.875rem;
+  background: var(--blue-50); color: var(--blue-500);
+  border: 1px solid #c7d2fe; border-radius: 99px;
+  font-size: 0.8125rem; font-weight: 600; margin-bottom: 1.5rem;
 }
 
-/* ── FLUJO ── */
-.flow-section {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800; letter-spacing: -0.04em;
+  color: var(--gray-900); line-height: 1.15; margin-bottom: 1.25rem;
 }
 
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #e8e4dc;
-  letter-spacing: -0.03em;
-  margin: 0;
+.hero-desc {
+  font-size: 1.0625rem; color: var(--gray-500);
+  max-width: 540px; margin: 0 auto 2rem; line-height: 1.65;
 }
 
-.section-sub {
-  color: #5a5550;
-  font-size: 0.9rem;
-  margin: 0;
+.hero-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+.btn-primary {
+  padding: 0.65rem 1.5rem; background: var(--blue-500); color: white;
+  border-radius: var(--radius-md); font-size: 0.9375rem; font-weight: 600;
+  text-decoration: none; transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
 }
+.btn-primary:hover { background: var(--blue-600); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,91,255,0.35); text-decoration: none; }
 
-.flow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 0.5rem;
+.btn-secondary {
+  padding: 0.65rem 1.5rem; background: var(--white); color: var(--gray-700);
+  border: 1.5px solid var(--gray-200); border-radius: var(--radius-md);
+  font-size: 0.9375rem; font-weight: 600; text-decoration: none;
+  transition: all var(--transition);
 }
+.btn-secondary:hover { border-color: var(--gray-400); text-decoration: none; }
 
-.flow-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* Features */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+.feature-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg); padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
 }
+.feature-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
-.flow-node {
-  width: 56px; height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
+.feature-icon  { font-size: 1.5rem; margin-bottom: 0.875rem; }
+.feature-title { font-size: 0.9375rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.375rem; }
+.feature-desc  { font-size: 0.875rem; color: var(--gray-500); line-height: 1.55; }
+
+@media (max-width: 768px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-.node--gold  { background: rgba(200,169,110,0.12); border: 1px solid rgba(200,169,110,0.25); }
-.node--blue  { background: rgba(110,180,232,0.12); border: 1px solid rgba(110,180,232,0.25); }
-.node--green { background: rgba(111,207,151,0.12); border: 1px solid rgba(111,207,151,0.25); }
-
-.flow-label {
-  font-size: 0.75rem;
-  color: #5a5550;
-  position: absolute;
-  margin-top: 72px;
-}
-
-.flow-item { position: relative; }
-
-.flow-arrow {
-  color: #3a3530;
-  font-size: 1.2rem;
-  margin: 0 0.25rem;
-}
-
-/* ── CTA ── */
-.cta-section {
-  text-align: center;
-  padding: 3rem 2rem;
-  background: rgba(22, 22, 26, 0.8);
-  border: 1px solid rgba(200, 169, 110, 0.1);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.cta-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #e8e4dc;
-  margin: 0;
-}
-
-.cta-sub {
-  color: #5a5550;
-  font-size: 0.95rem;
-  max-width: 400px;
-  line-height: 1.6;
-  margin: 0;
+@media (max-width: 480px) {
+  .features-grid { grid-template-columns: 1fr; }
 }
 </style>

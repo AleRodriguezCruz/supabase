@@ -1,346 +1,65 @@
-<!-- src/views/ResetPasswordView.vue -->
 <template>
-  <div class="login-page">
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow" aria-hidden="true"></div>
+  <div class="auth-page">
+    <div class="auth-card">
 
-    <div class="login-card">
-
-      <!-- Encabezado -->
-      <div class="card-header">
-        <span class="card-icon">🔑</span>
-        <h1 class="card-title">Nueva contraseña</h1>
-        <p class="card-subtitle">Elige una contraseña segura</p>
+      <div class="auth-header">
+        <div class="auth-logo">
+          <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="8" fill="#635bff"/>
+            <path d="M14 7C10.134 7 7 10.134 7 14s3.134 7 7 7 7-3.134 7-7-3.134-7-7-7zm0 11.5A4.5 4.5 0 119.5 14 4.505 4.505 0 0114 18.5z" fill="white"/>
+          </svg>
+        </div>
+        <h1 class="auth-title">Nueva contraseña</h1>
+        <p class="auth-subtitle">Elige una contraseña segura</p>
       </div>
 
-      <!-- Mensaje de éxito -->
-      <Transition name="alert">
-        <div v-if="successMsg" class="alert-success" role="alert">
-          <span>✅</span> {{ successMsg }}
-        </div>
-      </Transition>
+      <div v-if="successMsg" class="alert alert--success">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        {{ successMsg }}
+      </div>
 
-      <!-- Mensaje de error -->
-      <Transition name="alert">
-        <div v-if="errorMsg" class="alert-error" role="alert">
-          <span>⚠</span> {{ errorMsg }}
-        </div>
-      </Transition>
+      <div v-if="errorMsg" class="alert alert--error">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0V5zm.75 7a1 1 0 110-2 1 1 0 010 2z"/>
+        </svg>
+        {{ errorMsg }}
+      </div>
 
-      <!-- Formulario para nueva contraseña -->
-      <form class="login-form" @submit.prevent="handleReset" novalidate>
+      <form v-if="!successMsg" @submit.prevent="handleReset" novalidate>
 
-        <!-- Campo: nueva contraseña -->
         <div class="field" :class="{ 'field--error': errors.password }">
           <label for="password" class="field-label">Nueva contraseña</label>
           <div class="field-input-wrap">
-            <span class="field-icon">🔒</span>
-            <input
-              id="password"
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              class="field-input"
-              placeholder="••••••••"
-              @blur="validatePassword"
-            />
-            <button type="button" class="field-toggle" @click="showPassword = !showPassword">
-              {{ showPassword ? '🙈' : '👁' }}
+            <input id="password" v-model="form.password" :type="showPassword ? 'text' : 'password'"
+              class="field-input" placeholder="Mínimo 6 caracteres" @blur="validatePassword"/>
+            <button type="button" class="field-eye" @click="showPassword = !showPassword">
+              <svg v-if="!showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
             </button>
           </div>
-          <span v-if="errors.password" class="field-error">{{ errors.password }}</span>
+          <span v-if="errors.password" class="field-msg">{{ errors.password }}</span>
         </div>
 
-        <!-- Campo: confirmar contraseña -->
         <div class="field" :class="{ 'field--error': errors.confirm }">
           <label for="confirm" class="field-label">Confirmar contraseña</label>
-          <div class="field-input-wrap">
-            <span class="field-icon">🔒</span>
-            <input
-              id="confirm"
-              v-model="form.confirm"
-              :type="showConfirm ? 'text' : 'password'"
-              class="field-input"
-              placeholder="••••••••"
-              @blur="validateConfirm"
-            />
-            <button type="button" class="field-toggle" @click="showConfirm = !showConfirm">
-              {{ showConfirm ? '🙈' : '👁' }}
-            </button>
-          </div>
-          <span v-if="errors.confirm" class="field-error">{{ errors.confirm }}</span>
+          <input id="confirm" v-model="form.confirm" type="password" class="field-input"
+            placeholder="Repite tu contraseña" @blur="validateConfirm"/>
+          <span v-if="errors.confirm" class="field-msg">{{ errors.confirm }}</span>
         </div>
 
-        <!-- Botón para guardar -->
-        <button
-          type="submit"
-          class="btn-submit"
-          :disabled="isLoading || !!successMsg"
-          :class="{ 'btn-submit--loading': isLoading }"
-        >
-          <span v-if="!isLoading">Guardar contraseña →</span>
+        <button type="submit" class="btn-primary" :disabled="isLoading">
+          <span v-if="!isLoading">Guardar contraseña</span>
           <span v-else class="spinner"></span>
         </button>
 
       </form>
+
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { supabase } from '@/lib/supabase'
-
-const router     = useRouter()
-const isLoading  = ref(false)
-const errorMsg   = ref('')
-const successMsg = ref('')
-const showPassword = ref(false)
-const showConfirm  = ref(false)
-
-const form   = reactive({ password: '', confirm: '' })
-const errors = reactive({ password: '', confirm: '' })
-
-// Al cargar la página verificamos que el link del correo sea válido
-// Si no hay sesión activa, el link ya expiró y avisamos al usuario
-onMounted(async () => {
-  const { data, error } = await supabase.auth.getSession()
-  if (error || !data.session) {
-    errorMsg.value = 'El enlace es inválido o ha expirado. Solicita uno nuevo.'
-  }
-})
-
-// Validamos que la contraseña tenga al menos 6 caracteres
-function validatePassword() {
-  if (!form.password)                errors.password = 'La contraseña es obligatoria.'
-  else if (form.password.length < 6) errors.password = 'Mínimo 6 caracteres.'
-  else                               errors.password = ''
-}
-
-// Verificamos que ambas contraseñas coincidan antes de guardar
-function validateConfirm() {
-  if (!form.confirm)                       errors.confirm = 'Confirma tu contraseña.'
-  else if (form.confirm !== form.password) errors.confirm = 'Las contraseñas no coinciden.'
-  else                                     errors.confirm = ''
-}
-
-function isFormValid() {
-  validatePassword(); validateConfirm()
-  return !errors.password && !errors.confirm
-}
-
-// Guardamos la nueva contraseña en Supabase
-// Después cerramos la sesión para que el usuario inicie con sus nuevas credenciales
-// Usamos router.replace en lugar de push para que no pueda regresar con el botón atrás
-async function handleReset() {
-  errorMsg.value   = ''
-  successMsg.value = ''
-  if (!isFormValid()) return
-
-  isLoading.value = true
-  try {
-    const { error } = await supabase.auth.updateUser({ password: form.password })
-    if (error) throw error
-
-    successMsg.value = '¡Contraseña actualizada! Redirigiendo al login...'
-
-    // Cerramos sesión para que inicie con la nueva contraseña
-    await supabase.auth.signOut()
-
-    // replace en lugar de push bloquea el botón atrás del navegador
-    setTimeout(() => router.replace('/login'), 2500)
-  } catch (err) {
-    errorMsg.value = err.message || 'Error al actualizar la contraseña.'
-  } finally {
-    isLoading.value = false
-  }
-}
-</script>
-
-<style scoped>
-.login-page {
-  min-height: calc(100vh - 65px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding: 2rem 1rem;
-}
-
-.bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(200, 169, 110, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200, 169, 110, 0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-}
-
-.bg-glow {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(200, 169, 110, 0.08) 0%, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.login-card {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  background: rgba(22, 22, 26, 0.95);
-  border: 1px solid rgba(200, 169, 110, 0.15);
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 24px 48px rgba(0,0,0,0.5);
-  animation: cardIn 0.4s ease both;
-}
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.card-header { text-align: center; margin-bottom: 1.75rem; }
-
-.card-icon {
-  display: block;
-  font-size: 2rem;
-  color: #c8a96e;
-  margin-bottom: 0.75rem;
-}
-
-.card-title {
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #e8e4dc, #c8a96e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0 0 0.4rem;
-}
-
-.card-subtitle { color: #6b6560; font-size: 0.88rem; margin: 0; }
-
-.alert-error {
-  background: rgba(224, 112, 112, 0.1);
-  border: 1px solid rgba(224, 112, 112, 0.3);
-  color: #e07070;
-  border-radius: 8px;
-  padding: 0.65rem 1rem;
-  font-size: 0.88rem;
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.alert-success {
-  background: rgba(111, 207, 151, 0.1);
-  border: 1px solid rgba(111, 207, 151, 0.3);
-  color: #6fcf97;
-  border-radius: 8px;
-  padding: 0.65rem 1rem;
-  font-size: 0.88rem;
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.alert-enter-active, .alert-leave-active { transition: all 0.3s ease; }
-.alert-enter-from, .alert-leave-to { opacity: 0; transform: translateY(-8px); }
-
-.login-form { display: flex; flex-direction: column; gap: 1.1rem; }
-
-.field { display: flex; flex-direction: column; gap: 0.4rem; }
-
-.field-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #9a938c;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.field-input-wrap { position: relative; display: flex; align-items: center; }
-
-.field-icon {
-  position: absolute;
-  left: 0.85rem;
-  font-size: 0.9rem;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-.field-input {
-  width: 100%;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  padding: 0.65rem 2.75rem 0.65rem 2.5rem;
-  color: #e8e4dc;
-  font-size: 0.95rem;
-  font-family: inherit;
-  transition: border-color 0.2s, background 0.2s;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.field-input::placeholder { color: #3e3a36; }
-.field-input:focus {
-  border-color: rgba(200, 169, 110, 0.5);
-  background: rgba(200, 169, 110, 0.04);
-}
-
-.field--error .field-input { border-color: rgba(224, 112, 112, 0.5); }
-.field-error { font-size: 0.8rem; color: #e07070; }
-
-.field-toggle {
-  position: absolute;
-  right: 0.75rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.95rem;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-  padding: 0;
-}
-.field-toggle:hover { opacity: 1; }
-
-.btn-submit {
-  margin-top: 0.5rem;
-  padding: 0.8rem;
-  background: linear-gradient(135deg, #c8a96e, #a0834e);
-  color: #0d0d0f;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.15s;
-}
-
-.btn-submit:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.spinner {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(13,13,15,0.3);
-  border-top-color: #0d0d0f;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
