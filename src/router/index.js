@@ -1,15 +1,14 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 
-const HomeView      = () => import('@/views/HomeView.vue')
-const LoginView     = () => import('@/views/LoginView.vue')
-const DashboardView = () => import('@/views/DashboardView.vue')
-const NotFoundView  = () => import('@/views/NotFoundView.vue')
-const RegisterView  = () => import('@/views/RegisterView.vue')
-const ForgotPasswordView = () => import('@/views/ForgotPasswordView.vue')
-const ResetPasswordView  = () => import('@/views/ResetPasswordView.vue')
 
+const HomeView = () => import('@/views/HomeView.vue')
+const LoginView = () => import('@/views/LoginView.vue')
+const DashboardView = () => import('@/views/DashboardView.vue')
+const NotFoundView = () => import('@/views/NotFoundView.vue')
+const RegisterView = () => import('@/views/RegisterView.vue')
+const ForgotPasswordView = () => import('@/views/ForgotPasswordView.vue')
+const ResetPasswordView = () => import('@/views/ResetPasswordView.vue')
 
 const routes = [
   {
@@ -37,12 +36,6 @@ const routes = [
     meta: { title: 'Dashboard', requiresAuth: true },
   },
   {
-    path: '/:pathMatch(.*)*',
-    name: 'not-found',
-    component: NotFoundView,
-    meta: { title: 'Página no encontrada' },
-  },
-  {
     path: '/forgot-password',
     name: 'forgot-password',
     component: ForgotPasswordView,
@@ -52,7 +45,14 @@ const routes = [
     path: '/reset-password',
     name: 'reset-password',
     component: ResetPasswordView,
+    // requiresAuth false porque entramos con la sesión temporal del correo
     meta: { title: 'Nueva contraseña', requiresAuth: false },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFoundView,
+    meta: { title: 'Página no encontrada' },
   },
 ]
 
@@ -65,22 +65,29 @@ const router = createRouter({
   },
 })
 
-// NAVIGATION GUARD con Supabase Auth
-router.beforeEach(async (to) => {
+// NAVIGATION GUARD
+router.beforeEach(async (to, from, next) => {
+  // Configurar título de la página
   document.title = `${to.meta.title ?? 'App'} | VueAuth`
 
+  // Obtener sesión actual
   const { data } = await supabase.auth.getSession()
   const isAuthenticated = !!data.session
 
+  // 1. Si la ruta requiere auth y no está logueado -> Al Login
   if (to.meta.requiresAuth && !isAuthenticated) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    next({ name: 'login', query: { redirect: to.fullPath } })
+  } 
+  // 2. Si la ruta es solo para invitados (Login/Register) y YA está logueado
+  else if (to.meta.guestOnly && isAuthenticated) {
+    //Si acaba de cambiar contraseña, el signOut() lo hará fallar aquí 
+    // y lo dejará entrar al login. Si no, al Dashboard.
+    next({ name: 'dashboard' })
+  } 
+  // 3. En cualquier otro caso, permitir el paso
+  else {
+    next()
   }
-
-  if (to.meta.guestOnly && isAuthenticated) {
-    return { name: 'dashboard' }
-  }
-
-  return true
 })
 
 export default router
